@@ -22,7 +22,7 @@ class n_armed_bandit():
 
         self.means = np.round(np.random.uniform(low=self.mean_range[0], high=self.mean_range[1], size=self.N),2)
         self.stds = np.round(np.random.uniform(low=self.std_range[0],high=self.std_range[1],size=self.N),2)
-        
+
     def inspect(self):
         '''
         Print out Reward Range Descriptions and the Mean with Standard Deviation of each Action
@@ -41,7 +41,13 @@ class n_armed_bandit():
             print(f'Invalid action. Actions must be between 1 and {self.N}')
         else:
             return np.random.normal(loc=self.means[action_num], scale=self.stds[action_num])
-
+   
+    def optimal_action(self):
+        '''
+        Return the action number of the action with the highest mean reward
+        '''
+        return np.argmax(self.means) + 1 
+        
     def visualize(self):
         '''
         Plot out the Reward Distributions of each Arm 

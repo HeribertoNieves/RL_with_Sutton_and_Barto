@@ -26,6 +26,13 @@ class n_armed_bandit():
         else:
             return np.random.normal(loc=self.means[action_num], scale=self.stds[action_num])
 
+    def optimal_action(self):
+        '''
+        Return the action number of the action with the highest mean reward
+        '''
+        return np.argmax(self.means) + 1  # Adding 1 since actions are 1-indexed
+    
+
     def visualize(self):
         action_numbers = np.arange(1, self.N+1)  # Action indices (x-axis)
         fig = go.Figure()
