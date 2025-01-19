@@ -1,4 +1,7 @@
 import numpy as np
+import plotly.graph_objects as go
+import bandit_src.algorithms as algo
+
 
 class bandit_experiment():
     def __init__(self, bandit, steps=1000, runs=100, algos=['random'], visualize=False):
