@@ -17,12 +17,12 @@ class n_armed_bandit():
         
     def inspect(self):
         print(f'Action Range: Means {self.mean_range} and STDev Range {self.std_range}')
-        for i in range(1,self.N+1):
+        for i in range(0,self.N):
             print(f'Action {i}: Mean {self.means[i-1]} and STDev {self.stds[i-1]}')
 
     def action(self,action_num):
-        if action_num<1 or action_num>self.N:
-            print(f'Invalid action. Actions must be between 1 and {self.N}')
+        if action_num<0 or action_num>self.N-1:
+            print(f'Invalid action. Actions must be between 0 and {self.N-1}')
         else:
             return np.random.normal(loc=self.means[action_num], scale=self.stds[action_num])
 
@@ -30,11 +30,11 @@ class n_armed_bandit():
         '''
         Return the action number of the action with the highest mean reward
         '''
-        return np.argmax(self.means) + 1  # Adding 1 since actions are 1-indexed
+        return np.argmax(self.means) 
     
 
     def visualize(self):
-        action_numbers = np.arange(1, self.N+1)  # Action indices (x-axis)
+        action_numbers = np.arange(0, self.N)  # Action indices (x-axis)
         fig = go.Figure()
         
         for action, mean, std in zip(action_numbers, self.means, self.stds):
