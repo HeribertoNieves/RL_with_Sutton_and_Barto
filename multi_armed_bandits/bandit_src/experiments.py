@@ -4,7 +4,7 @@ import bandit_src.algorithms as algorithms
 
 
 class bandit_experiment():
-    def __init__(self, bandit, steps=1000, runs=100, algos=['random'], epsilon = [0], init_Q = 0, visualize=False):
+    def __init__(self, bandit, steps=1000, runs=100, algos=['random'], epsilon = [0], c=[0], init_Q = [0], visualize=False):
         self.bandit = bandit
         self.steps = steps
         self.runs = runs
@@ -16,6 +16,8 @@ class bandit_experiment():
         self.epsilon = epsilon
         self.epsilon_ct = -1
         self.init_Q = init_Q
+        self.c = c
+        self.c_ct = -1
         self.previous_reward = None
 
     def run(self):
@@ -25,6 +27,8 @@ class bandit_experiment():
             algo_actions = []
             if 'e_greedy' in algo:
                 self.epsilon_ct+=1
+            elif 'UCB' in algo:
+                self.c_ct += 1
             self.previous_reward = None
             for run in range(1,self.runs+1):
                 print(f'Run {run}/{self.runs}')
@@ -35,7 +39,6 @@ class bandit_experiment():
                     if step%100==0:
                         print(f'Step {step}/{self.steps}')
                     action = self._action_selection(algo,step,self.previous_reward)
-                    print(action)
                     reward = self.bandit.action(action)
                     self.previous_reward= reward
                     run_rewards.append(reward)
@@ -64,6 +67,12 @@ class bandit_experiment():
             else:
                 self.e_greedy.update(previous_reward)
             return self.e_greedy.action()
+        elif 'UCB' in algo:
+            if step==1: # self, bandit, c, init_Q=0
+                self.UCB = algorithms.UCB(self.bandit,self.c[self.c_ct],self.init_Q)
+            else:
+                self.UCB.update(previous_reward)
+            return self.UCB.action()
         else:
             raise NotImplementedError(f'Algorithm "{algo}" not implemented')
 
@@ -71,6 +80,7 @@ class bandit_experiment():
         # Show reward distributions of each action
         self.bandit.visualize()
         self.epsilon_ct=-1
+        self.c_ct=-1
         # Make figure showing traces of average reward 
         fig=go.Figure()
         for key in self.rewards_log.keys():
@@ -79,6 +89,9 @@ class bandit_experiment():
             if 'e_greedy' in key:
                 self.epsilon_ct+=1
                 name = key + f' Epsilon: {self.epsilon[self.epsilon_ct]}'
+            elif 'UCB' in key:
+                self.c_ct+=1
+                name = key + f' c: {self.c[self.c_ct]}'
             else:
                 name = key
             fig.add_trace(go.Scatter(x=np.arange(self.steps),y=mean_rewards_array,name=f'{name}',mode='lines'))
@@ -95,10 +108,14 @@ class bandit_experiment():
         # Make figure showing % of optimal action completed
         fig2 = go.Figure()
         self.epsilon_ct=-1
+        self.c_ct=-1
         for algo in self.optimal_action_counts:
             if 'e_greedy' in algo:
                 self.epsilon_ct+=1
                 name = algo + f' Epsilon: {self.epsilon[self.epsilon_ct]}'
+            elif 'UCB' in algo:
+                self.c_ct+=1
+                name = algo + f' c: {self.c[self.c_ct]}'
             else:
                 name = algo
             optimal_percentage = (self.optimal_action_counts[algo]/self.runs)*100
@@ -110,3 +127,5 @@ class bandit_experiment():
         )
         fig2.update_layout(showlegend=True)
         fig2.show()
+
+
